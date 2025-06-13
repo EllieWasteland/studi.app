@@ -5,19 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editor de Presentaciones</title>
 
-    <!-- 1. Scripts para que React funcione en el navegador -->
-    <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
-    <!-- Dependencias de tu App (Tailwind y Lucide Icons) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide-react@0.292.0/dist/lucide-react.js"></script>
+    <!-- Los scripts se han movido al final del body -->
 
     <!-- Enlace al Manifest para la PWA -->
     <link rel="manifest" href="manifest.json">
     
-    <!-- Estilos generales -->
+    <!-- Estilos generales y fuentes -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
@@ -30,218 +24,221 @@
     <!-- El div donde se cargará toda tu aplicación de React -->
     <div id="root"></div>
 
+    <!-- Scripts de dependencias (movidos al final del body para una carga correcta) -->
+    <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/lucide-react@0.292.0/dist/lucide-react.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
     <!-- Tu código de React -->
     <script type="text/babel">
-        // **LA CORRECCIÓN CLAVE:** Usamos window.addEventListener('load', ...)
-        // Esto asegura que TODOS los scripts (React, Lucide, etc.) se hayan cargado
-        // antes de intentar ejecutar el código de la aplicación.
-        window.addEventListener('load', () => {
-            // --- Registro del Service Worker ---
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('Service Worker Registrado'))
-                    .catch(err => console.log('Error en registro de Service Worker: ', err));
-            }
+        // Ya no es necesario el window.addEventListener('load') porque los scripts se cargan en orden.
         
-            // Ahora es seguro acceder a la librería 'lucide'
-            const { ChevronLeft, ChevronRight, Edit, X, Image: ImageIcon, Type, Film, Settings, Download, Trash2 } = lucide;
+        // --- Registro del Service Worker ---
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('Service Worker Registrado'))
+                .catch(err => console.log('Error en registro de Service Worker: ', err));
+        }
+    
+        // Ahora es seguro acceder a la librería 'lucide'
+        const { ChevronLeft, ChevronRight, Edit, X, Image: ImageIcon, Type, Film, Settings, Download, Trash2 } = lucide;
 
-            // --- Helper para generar el HTML exportable ---
-            const generateViewerHTML = (screensData, initialIndex) => {
-                const screensJSON = JSON.stringify(screensData, null, 2);
-                return `
-            <!DOCTYPE html>
-            <html lang="es">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Presentación Educativa</title>
-                <script src="https://cdn.tailwindcss.com"><\/script>
-                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
-                <style> body { font-family: 'Inter', sans-serif; } .backdrop-blur-md { backdrop-filter: blur(16px); } <\/style>
-            </head>
-            <body class="bg-slate-900 overflow-hidden">
-                <div id="app-root" class="w-full h-screen relative"></div>
-                <script type="module">
-                    const screens = ${screensJSON};
-                    let currentIndex = ${initialIndex};
-                    const root = document.getElementById('app-root');
+        // --- Helper para generar el HTML exportable ---
+        const generateViewerHTML = (screensData, initialIndex) => {
+            const screensJSON = JSON.stringify(screensData, null, 2);
+            return `
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Presentación Educativa</title>
+            <script src="https://cdn.tailwindcss.com"><\/script>
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+            <style> body { font-family: 'Inter', sans-serif; } .backdrop-blur-md { backdrop-filter: blur(16px); } <\/style>
+        </head>
+        <body class="bg-slate-900 overflow-hidden">
+            <div id="app-root" class="w-full h-screen relative"></div>
+            <script type="module">
+                const screens = ${screensJSON};
+                let currentIndex = ${initialIndex};
+                const root = document.getElementById('app-root');
 
-                    const renderScreen = () => {
-                        const screen = screens[currentIndex];
-                        if (!screen) return;
-                        let contentHTML = '';
-                        const baseCardStyle = 'w-full max-w-7xl h-[80vh] bg-white/10 backdrop-blur-md rounded-2xl shadow-lg border border-white/20 p-8 md:p-12 flex flex-col justify-center items-center text-center text-white';
+                const renderScreen = () => {
+                    const screen = screens[currentIndex];
+                    if (!screen) return;
+                    let contentHTML = '';
+                    const baseCardStyle = 'w-full max-w-7xl h-[80vh] bg-white/10 backdrop-blur-md rounded-2xl shadow-lg border border-white/20 p-8 md:p-12 flex flex-col justify-center items-center text-center text-white';
 
-                        switch(screen.type) {
-                            case 'title':
-                                contentHTML = \`<div class="\${baseCardStyle}"><h1 class="text-4xl md:text-6xl font-bold shadow-lg">\${screen.title}</h1><p class="mt-4 text-xl md:text-2xl text-white/80 shadow-md">\${screen.subtitle}</p></div>\`;
-                                break;
-                            case 'text_image':
-                                contentHTML = \`<div class="\${baseCardStyle} md:flex-row md:text-left md:items-center gap-8"><div class="md:w-1/2 flex flex-col justify-center"><h2 class="text-3xl md:text-4xl font-bold shadow-md">\${screen.title}</h2><p class="mt-4 text-md md:text-lg text-white/90">\${screen.text}</p></div><div class="md:w-1/2 mt-6 md:mt-0"><img src="\${screen.imageUrl}" alt="\${screen.title}" class="rounded-lg shadow-2xl w-full h-auto max-h-96 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/600x400/334155/FFFFFF?text=Imagen+no+disponible';"/></div></div>\`;
-                                break;
-                            case 'video':
-                                 contentHTML = \`<div class="\${baseCardStyle}"><h2 class="text-3xl md:text-4xl font-bold shadow-md mb-6">\${screen.title}</h2><p class="mb-6 text-md md:text-lg text-white/90 max-w-3xl">\${screen.text}</p><div class="w-full max-w-2xl aspect-video bg-black rounded-lg shadow-2xl overflow-hidden"><iframe class="w-full h-full" src="https://www.youtube.com/embed/\${screen.videoId}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div></div>\`;
-                                break;
-                        }
-                        root.innerHTML = \`<div class="absolute inset-0 w-full h-full bg-cover bg-center" style="background-image: url('\${screen.background || ''}');"><div class="absolute inset-0 w-full h-full bg-black/40"></div></div><div class="relative w-full h-full flex flex-col justify-center items-center p-4 md:p-8">\${contentHTML}<div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-6"><button id="prevBtn" class="p-3 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg></button><div id="indicator-container" class="flex gap-2.5"></div><button id="nextBtn" class="p-3 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg></button></div></div>\`;
-                        updateIndicator();
-                        document.getElementById('prevBtn').addEventListener('click', () => { currentIndex = (currentIndex === 0) ? screens.length - 1 : currentIndex - 1; renderScreen(); });
-                        document.getElementById('nextBtn').addEventListener('click', () => { currentIndex = (currentIndex === screens.length - 1) ? 0 : currentIndex + 1; renderScreen(); });
-                    };
-                    const updateIndicator = () => { const container = document.getElementById('indicator-container'); if (!container) return; container.innerHTML = screens.map((_, index) => \`<div class="w-2.5 h-2.5 rounded-full transition-all \${currentIndex === index ? 'bg-white scale-125' : 'bg-white/50'}"></div>\`).join(''); };
-                    renderScreen();
-                <\/script>
-            </body>
-            </html>`;
-            };
+                    switch(screen.type) {
+                        case 'title':
+                            contentHTML = \`<div class="\${baseCardStyle}"><h1 class="text-4xl md:text-6xl font-bold shadow-lg">\${screen.title}</h1><p class="mt-4 text-xl md:text-2xl text-white/80 shadow-md">\${screen.subtitle}</p></div>\`;
+                            break;
+                        case 'text_image':
+                            contentHTML = \`<div class="\${baseCardStyle} md:flex-row md:text-left md:items-center gap-8"><div class="md:w-1/2 flex flex-col justify-center"><h2 class="text-3xl md:text-4xl font-bold shadow-md">\${screen.title}</h2><p class="mt-4 text-md md:text-lg text-white/90">\${screen.text}</p></div><div class="md:w-1/2 mt-6 md:mt-0"><img src="\${screen.imageUrl}" alt="\${screen.title}" class="rounded-lg shadow-2xl w-full h-auto max-h-96 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/600x400/334155/FFFFFF?text=Imagen+no+disponible';"/></div></div>\`;
+                            break;
+                        case 'video':
+                             contentHTML = \`<div class="\${baseCardStyle}"><h2 class="text-3xl md:text-4xl font-bold shadow-md mb-6">\${screen.title}</h2><p class="mb-6 text-md md:text-lg text-white/90 max-w-3xl">\${screen.text}</p><div class="w-full max-w-2xl aspect-video bg-black rounded-lg shadow-2xl overflow-hidden"><iframe class="w-full h-full" src="https://www.youtube.com/embed/\${screen.videoId}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div></div>\`;
+                            break;
+                    }
+                    root.innerHTML = \`<div class="absolute inset-0 w-full h-full bg-cover bg-center" style="background-image: url('\${screen.background || ''}');"><div class="absolute inset-0 w-full h-full bg-black/40"></div></div><div class="relative w-full h-full flex flex-col justify-center items-center p-4 md:p-8">\${contentHTML}<div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-6"><button id="prevBtn" class="p-3 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg></button><div id="indicator-container" class="flex gap-2.5"></div><button id="nextBtn" class="p-3 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg></button></div></div>\`;
+                    updateIndicator();
+                    document.getElementById('prevBtn').addEventListener('click', () => { currentIndex = (currentIndex === 0) ? screens.length - 1 : currentIndex - 1; renderScreen(); });
+                    document.getElementById('nextBtn').addEventListener('click', () => { currentIndex = (currentIndex === screens.length - 1) ? 0 : currentIndex + 1; renderScreen(); });
+                };
+                const updateIndicator = () => { const container = document.getElementById('indicator-container'); if (!container) return; container.innerHTML = screens.map((_, index) => \`<div class="w-2.5 h-2.5 rounded-full transition-all \${currentIndex === index ? 'bg-white scale-125' : 'bg-white/50'}"></div>\`).join(''); };
+                renderScreen();
+            <\/script>
+        </body>
+        </html>`;
+        };
 
-            // --- Datos de Ejemplo ---
-            const initialScreens = [
-              {
-                id: 1, type: 'title', title: 'Bienvenido al Editor Educativo', subtitle: 'Una nueva forma de aprender y enseñar',
-                background: 'https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=2029&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
-              },
-              {
-                id: 2, type: 'text_image', title: 'Anatomía Celular', text: 'La célula es la unidad básica de la vida. Todas las células se dividen en dos grandes grupos: eucariotas y procariotas.', imageUrl: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-                background: 'https://images.unsplash.com/photo-1533628635777-112b2239b1c7?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
-              },
-              {
-                id: 3, type: 'video', title: 'El Sistema Solar', text: 'Un recorrido visual por los planetas que componen nuestro sistema solar.', videoId: 'z_a-2I3-65s',
-                background: 'https://images.unsplash.com/photo-1446776811953-b23d5795b4e7?q=80&w=2072&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
-              }
-            ];
+        // --- Datos de Ejemplo ---
+        const initialScreens = [
+          {
+            id: 1, type: 'title', title: 'Bienvenido al Editor Educativo', subtitle: 'Una nueva forma de aprender y enseñar',
+            background: 'https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=2029&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
+          },
+          {
+            id: 2, type: 'text_image', title: 'Anatomía Celular', text: 'La célula es la unidad básica de la vida. Todas las células se dividen en dos grandes grupos: eucariotas y procariotas.', imageUrl: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+            background: 'https://images.unsplash.com/photo-1533628635777-112b2239b1c7?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
+          },
+          {
+            id: 3, type: 'video', title: 'El Sistema Solar', text: 'Un recorrido visual por los planetas que componen nuestro sistema solar.', videoId: 'z_a-2I3-65s',
+            background: 'https://images.unsplash.com/photo-1446776811953-b23d5795b4e7?q=80&w=2072&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
+          }
+        ];
 
-            // --- Componentes UI de React ---
-            const ScreenRenderer = ({ screen, isEditing, settings }) => {
-                const baseCardStyle = `w-full h-full p-8 md:p-12 flex flex-col justify-center items-center text-center transition-all duration-500 ease-in-out ${isEditing ? 'scale-95' : 'scale-100'}`;
-                const fontClasses = { title: 'text-4xl md:text-6xl', subtitle: 'text-xl md:text-2xl', heading: 'text-3xl md:text-4xl', body: 'text-md md:text-lg' };
+        // --- Componentes UI de React ---
+        const ScreenRenderer = ({ screen, isEditing, settings }) => {
+            const baseCardStyle = `w-full h-full p-8 md:p-12 flex flex-col justify-center items-center text-center transition-all duration-500 ease-in-out ${isEditing ? 'scale-95' : 'scale-100'}`;
+            const fontClasses = { title: 'text-4xl md:text-6xl', subtitle: 'text-xl md:text-2xl', heading: 'text-3xl md:text-4xl', body: 'text-md md:text-lg' };
 
-                switch (screen.type) {
-                    case 'title': return (<div className={baseCardStyle}><h1 className={`font-bold text-white shadow-lg ${fontClasses.title}`}>{screen.title}</h1><p className={`mt-4 text-white/80 shadow-md ${fontClasses.subtitle}`}>{screen.subtitle}</p></div>);
-                    case 'text_image': return (<div className={`${baseCardStyle} md:flex-row md:text-left md:items-center gap-8`}><div className="md:w-1/2 flex flex-col justify-center"><h2 className={`font-bold text-white shadow-md ${fontClasses.heading}`}>{screen.title}</h2><p className={`mt-4 text-white/90 ${fontClasses.body}`}>{screen.text}</p></div><div className="md:w-1/2 mt-6 md:mt-0"><img src={screen.imageUrl} alt={screen.title} className="rounded-lg shadow-2xl w-full h-auto max-h-96 object-cover" onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/600x400/334155/FFFFFF?text=Imagen+no+disponible'; }}/></div></div>);
-                    case 'video': return (<div className={baseCardStyle}><h2 className={`font-bold text-white shadow-md mb-6 ${fontClasses.heading}`}>{screen.title}</h2><p className={`mb-6 text-white/90 max-w-3xl ${fontClasses.body}`}>{screen.text}</p><div className="w-full max-w-2xl aspect-video bg-black rounded-lg shadow-2xl overflow-hidden"><iframe className="w-full h-full" src={`https://www.youtube.com/embed/${screen.videoId}`} title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe></div></div>);
-                    default: return <div className={baseCardStyle}><h1 className="text-4xl font-bold text-white">Pantalla Vacía</h1></div>;
-                }
-            };
+            switch (screen.type) {
+                case 'title': return (<div className={baseCardStyle}><h1 className={`font-bold text-white shadow-lg ${fontClasses.title}`}>{screen.title}</h1><p className={`mt-4 text-white/80 shadow-md ${fontClasses.subtitle}`}>{screen.subtitle}</p></div>);
+                case 'text_image': return (<div className={`${baseCardStyle} md:flex-row md:text-left md:items-center gap-8`}><div className="md:w-1/2 flex flex-col justify-center"><h2 className={`font-bold text-white shadow-md ${fontClasses.heading}`}>{screen.title}</h2><p className={`mt-4 text-white/90 ${fontClasses.body}`}>{screen.text}</p></div><div className="md:w-1/2 mt-6 md:mt-0"><img src={screen.imageUrl} alt={screen.title} className="rounded-lg shadow-2xl w-full h-auto max-h-96 object-cover" onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/600x400/334155/FFFFFF?text=Imagen+no+disponible'; }}/></div></div>);
+                case 'video': return (<div className={baseCardStyle}><h2 className={`font-bold text-white shadow-md mb-6 ${fontClasses.heading}`}>{screen.title}</h2><p className={`mb-6 text-white/90 max-w-3xl ${fontClasses.body}`}>{screen.text}</p><div className="w-full max-w-2xl aspect-video bg-black rounded-lg shadow-2xl overflow-hidden"><iframe className="w-full h-full" src={`https://www.youtube.com/embed/${screen.videoId}`} title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe></div></div>);
+                default: return <div className={baseCardStyle}><h1 className="text-4xl font-bold text-white">Pantalla Vacía</h1></div>;
+            }
+        };
 
-            const EditorPanel = ({ screen, onUpdate, onClose, onAddScreen, onDeleteScreen }) => {
-                if (!screen) return null;
-                const handleInputChange = (e) => onUpdate({ ...screen, [e.target.name]: e.target.value });
-                return (
-                    <div className="absolute top-0 right-0 h-full w-full md:w-96 bg-white/20 backdrop-blur-xl shadow-2xl p-6 z-40 flex flex-col text-white transform transition-transform duration-300 ease-in-out">
-                        <div className="flex justify-between items-center mb-6"><h3 className="text-2xl font-bold">Editar Pantalla</h3><button onClick={onClose} className="p-2 rounded-full hover:bg-white/20"><X size={24} /></button></div>
-                        <div className="flex-grow overflow-y-auto pr-2 space-y-4">
-                            <div><label className="block text-sm font-semibold mb-2" htmlFor="title">Título</label><input type="text" name="title" value={screen.title || ''} onChange={handleInputChange} className="w-full p-2 rounded-md bg-black/30 border border-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-400"/></div>
-                            {screen.type === 'title' && (<div><label className="block text-sm font-semibold mb-2" htmlFor="subtitle">Subtítulo</label><input type="text" name="subtitle" value={screen.subtitle || ''} onChange={handleInputChange} className="w-full p-2 rounded-md bg-black/30 border border-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-400"/></div>)}
-                            {(screen.type === 'text_image' || screen.type === 'video') && (<div><label className="block text-sm font-semibold mb-2" htmlFor="text">Texto</label><textarea name="text" value={screen.text || ''} onChange={handleInputChange} rows="5" className="w-full p-2 rounded-md bg-black/30 border border-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-400"></textarea></div>)}
-                            {screen.type === 'text_image' && (<div><label className="block text-sm font-semibold mb-2" htmlFor="imageUrl">URL de la Imagen</label><input type="text" name="imageUrl" value={screen.imageUrl || ''} onChange={handleInputChange} className="w-full p-2 rounded-md bg-black/30 border border-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-400"/></div>)}
-                            {screen.type === 'video' && (<div><label className="block text-sm font-semibold mb-2" htmlFor="videoId">ID del Video de YouTube</label><input type="text" name="videoId" value={screen.videoId || ''} onChange={handleInputChange} className="w-full p-2 rounded-md bg-black/30 border border-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-400"/></div>)}
-                            <div><label className="block text-sm font-semibold mb-2" htmlFor="background">URL de Fondo</label><input type="text" name="background" value={screen.background || ''} onChange={handleInputChange} className="w-full p-2 rounded-md bg-black/30 border border-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-400"/></div>
-                        </div>
-                        <div className="mt-auto pt-4 border-t border-white/20">
-                            <p className="text-sm font-semibold mb-3">Añadir Nueva Pantalla:</p>
-                            <div className="grid grid-cols-3 gap-2 mb-4">
-                                <button onClick={() => onAddScreen('title')} className="flex flex-col items-center p-2 rounded-md bg-white/10 hover:bg-white/20"><Type size={20}/><span className="text-xs mt-1">Título</span></button>
-                                <button onClick={() => onAddScreen('text_image')} className="flex flex-col items-center p-2 rounded-md bg-white/10 hover:bg-white/20"><ImageIcon size={20}/><span className="text-xs mt-1">Texto/Img</span></button>
-                                <button onClick={() => onAddScreen('video')} className="flex flex-col items-center p-2 rounded-md bg-white/10 hover:bg-white/20"><Film size={20}/><span className="text-xs mt-1">Video</span></button>
-                            </div>
-                            <button onClick={onDeleteScreen} className="w-full flex items-center justify-center gap-2 p-2 rounded-md bg-red-500/50 hover:bg-red-500/70"><Trash2 size={16}/> Eliminar Pantalla</button>
-                        </div>
+        const EditorPanel = ({ screen, onUpdate, onClose, onAddScreen, onDeleteScreen }) => {
+            if (!screen) return null;
+            const handleInputChange = (e) => onUpdate({ ...screen, [e.target.name]: e.target.value });
+            return (
+                <div className="absolute top-0 right-0 h-full w-full md:w-96 bg-white/20 backdrop-blur-xl shadow-2xl p-6 z-40 flex flex-col text-white transform transition-transform duration-300 ease-in-out">
+                    <div className="flex justify-between items-center mb-6"><h3 className="text-2xl font-bold">Editar Pantalla</h3><button onClick={onClose} className="p-2 rounded-full hover:bg-white/20"><X size={24} /></button></div>
+                    <div className="flex-grow overflow-y-auto pr-2 space-y-4">
+                        <div><label className="block text-sm font-semibold mb-2" htmlFor="title">Título</label><input type="text" name="title" value={screen.title || ''} onChange={handleInputChange} className="w-full p-2 rounded-md bg-black/30 border border-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-400"/></div>
+                        {screen.type === 'title' && (<div><label className="block text-sm font-semibold mb-2" htmlFor="subtitle">Subtítulo</label><input type="text" name="subtitle" value={screen.subtitle || ''} onChange={handleInputChange} className="w-full p-2 rounded-md bg-black/30 border border-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-400"/></div>)}
+                        {(screen.type === 'text_image' || screen.type === 'video') && (<div><label className="block text-sm font-semibold mb-2" htmlFor="text">Texto</label><textarea name="text" value={screen.text || ''} onChange={handleInputChange} rows="5" className="w-full p-2 rounded-md bg-black/30 border border-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-400"></textarea></div>)}
+                        {screen.type === 'text_image' && (<div><label className="block text-sm font-semibold mb-2" htmlFor="imageUrl">URL de la Imagen</label><input type="text" name="imageUrl" value={screen.imageUrl || ''} onChange={handleInputChange} className="w-full p-2 rounded-md bg-black/30 border border-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-400"/></div>)}
+                        {screen.type === 'video' && (<div><label className="block text-sm font-semibold mb-2" htmlFor="videoId">ID del Video de YouTube</label><input type="text" name="videoId" value={screen.videoId || ''} onChange={handleInputChange} className="w-full p-2 rounded-md bg-black/30 border border-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-400"/></div>)}
+                        <div><label className="block text-sm font-semibold mb-2" htmlFor="background">URL de Fondo</label><input type="text" name="background" value={screen.background || ''} onChange={handleInputChange} className="w-full p-2 rounded-md bg-black/30 border border-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-400"/></div>
                     </div>
-                );
-            };
-            
-            const SettingsPanel = ({ settings, onUpdate, onClose, onExport }) => {
-              return (
-                <div className="absolute top-0 left-0 h-full w-full md:w-96 bg-white/20 backdrop-blur-xl shadow-2xl p-6 z-40 flex flex-col text-white">
-                    <div className="flex justify-between items-center mb-8"><h3 className="text-2xl font-bold">Ajustes</h3><button onClick={onClose} className="p-2 rounded-full hover:bg-white/20"><X size={24} /></button></div>
-                    <div className="flex-grow overflow-y-auto pr-2 space-y-6">
-                        {/* Contenido de ajustes aquí si es necesario */}
-                    </div>
-                    <div className="mt-auto pt-6 border-t border-white/20">
-                         <h4 className="text-lg font-bold mb-3">Compartir App</h4>
-                         <p className="text-sm text-white/80 mb-4">Descarga esta presentación como un único archivo HTML interactivo.</p>
-                         <button onClick={onExport} className="w-full flex items-center justify-center gap-3 py-3 rounded-lg bg-emerald-500/80 hover:bg-emerald-500/100 transition-colors font-bold"><Download size={20} />Descargar HTML</button>
+                    <div className="mt-auto pt-4 border-t border-white/20">
+                        <p className="text-sm font-semibold mb-3">Añadir Nueva Pantalla:</p>
+                        <div className="grid grid-cols-3 gap-2 mb-4">
+                            <button onClick={() => onAddScreen('title')} className="flex flex-col items-center p-2 rounded-md bg-white/10 hover:bg-white/20"><Type size={20}/><span className="text-xs mt-1">Título</span></button>
+                            <button onClick={() => onAddScreen('text_image')} className="flex flex-col items-center p-2 rounded-md bg-white/10 hover:bg-white/20"><ImageIcon size={20}/><span className="text-xs mt-1">Texto/Img</span></button>
+                            <button onClick={() => onAddScreen('video')} className="flex flex-col items-center p-2 rounded-md bg-white/10 hover:bg-white/20"><Film size={20}/><span className="text-xs mt-1">Video</span></button>
+                        </div>
+                        <button onClick={onDeleteScreen} className="w-full flex items-center justify-center gap-2 p-2 rounded-md bg-red-500/50 hover:bg-red-500/70"><Trash2 size={16}/> Eliminar Pantalla</button>
                     </div>
                 </div>
-              );
+            );
+        };
+        
+        const SettingsPanel = ({ settings, onUpdate, onClose, onExport }) => {
+          return (
+            <div className="absolute top-0 left-0 h-full w-full md:w-96 bg-white/20 backdrop-blur-xl shadow-2xl p-6 z-40 flex flex-col text-white">
+                <div className="flex justify-between items-center mb-8"><h3 className="text-2xl font-bold">Ajustes</h3><button onClick={onClose} className="p-2 rounded-full hover:bg-white/20"><X size={24} /></button></div>
+                <div className="flex-grow overflow-y-auto pr-2 space-y-6">
+                    {/* Contenido de ajustes aquí si es necesario */}
+                </div>
+                <div className="mt-auto pt-6 border-t border-white/20">
+                     <h4 className="text-lg font-bold mb-3">Compartir App</h4>
+                     <p className="text-sm text-white/80 mb-4">Descarga esta presentación como un único archivo HTML interactivo.</p>
+                     <button onClick={onExport} className="w-full flex items-center justify-center gap-3 py-3 rounded-lg bg-emerald-500/80 hover:bg-emerald-500/100 transition-colors font-bold"><Download size={20} />Descargar HTML</button>
+                </div>
+            </div>
+          );
+        };
+
+        // --- Componente Principal de la App ---
+        function App() {
+            const [screens, setScreens] = React.useState(initialScreens);
+            const [currentIndex, setCurrentIndex] = React.useState(0);
+            const [isEditing, setIsEditing] = React.useState(false);
+            const [isSettingsOpen, setSettingsOpen] = React.useState(false);
+            const [settings, setSettings] = React.useState({ fontSize: 'medium', theme: 'indigo' });
+
+            const currentScreen = screens[currentIndex];
+
+            const goToPrevious = () => setCurrentIndex((prev) => (prev === 0 ? screens.length - 1 : prev - 1));
+            const goToNext = () => setCurrentIndex((prev) => (prev === screens.length - 1 ? 0 : prev + 1));
+            
+            const handleUpdateScreen = (updatedScreen) => { setScreens(screens.map(s => s.id === updatedScreen.id ? updatedScreen : s)); };
+            const handleAddScreen = (type) => {
+                const newId = screens.length > 0 ? Math.max(...screens.map(s => s.id)) + 1 : 1;
+                const newScreenData = { title: 'Nuevo Título', subtitle: 'Subtítulo', text: 'Contenido', imageUrl: 'https://placehold.co/600x400/52525b/FFFFFF?text=Nueva+Imagen', videoId: 'dQw4w9WgXcQ' };
+                const newScreen = { id: newId, type: type, background: currentScreen?.background, ...newScreenData };
+                setScreens([...screens, newScreen]);
+                setCurrentIndex(screens.length);
+            };
+            const handleDeleteScreen = () => {
+                if (screens.length <= 1) return;
+                setScreens(screens.filter(s => s.id !== currentScreen.id));
+                setCurrentIndex(prev => (prev > 0 ? prev - 1 : 0));
+            };
+            const handleExport = () => {
+                const htmlContent = generateViewerHTML(screens, currentIndex);
+                const blob = new Blob([htmlContent], { type: 'text/html' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'presentacion.html';
+                a.click();
+                URL.revokeObjectURL(a.href);
             };
 
-            // --- Componente Principal de la App ---
-            function App() {
-                const [screens, setScreens] = React.useState(initialScreens);
-                const [currentIndex, setCurrentIndex] = React.useState(0);
-                const [isEditing, setIsEditing] = React.useState(false);
-                const [isSettingsOpen, setSettingsOpen] = React.useState(false);
-                const [settings, setSettings] = React.useState({ fontSize: 'medium', theme: 'indigo' });
+            return (
+                <main className="font-sans w-full h-screen bg-slate-900 overflow-hidden relative">
+                    <div className="absolute inset-0 w-full h-full bg-cover bg-center transition-all duration-1000 ease-in-out" style={{ backgroundImage: `url(${currentScreen?.background || ''})` }}>
+                        <div className="absolute inset-0 w-full h-full bg-black/40"></div>
+                    </div>
 
-                const currentScreen = screens[currentIndex];
-
-                const goToPrevious = () => setCurrentIndex((prev) => (prev === 0 ? screens.length - 1 : prev - 1));
-                const goToNext = () => setCurrentIndex((prev) => (prev === screens.length - 1 ? 0 : prev + 1));
-                
-                const handleUpdateScreen = (updatedScreen) => { setScreens(screens.map(s => s.id === updatedScreen.id ? updatedScreen : s)); };
-                const handleAddScreen = (type) => {
-                    const newId = screens.length > 0 ? Math.max(...screens.map(s => s.id)) + 1 : 1;
-                    const newScreenData = { title: 'Nuevo Título', subtitle: 'Subtítulo', text: 'Contenido', imageUrl: 'https://placehold.co/600x400/52525b/FFFFFF?text=Nueva+Imagen', videoId: 'dQw4w9WgXcQ' };
-                    const newScreen = { id: newId, type: type, background: currentScreen?.background, ...newScreenData };
-                    setScreens([...screens, newScreen]);
-                    setCurrentIndex(screens.length);
-                };
-                const handleDeleteScreen = () => {
-                    if (screens.length <= 1) return;
-                    setScreens(screens.filter(s => s.id !== currentScreen.id));
-                    setCurrentIndex(prev => (prev > 0 ? prev - 1 : 0));
-                };
-                const handleExport = () => {
-                    const htmlContent = generateViewerHTML(screens, currentIndex);
-                    const blob = new Blob([htmlContent], { type: 'text/html' });
-                    const a = document.createElement('a');
-                    a.href = URL.createObjectURL(blob);
-                    a.download = 'presentacion.html';
-                    a.click();
-                    URL.revokeObjectURL(a.href);
-                };
-
-                return (
-                    <main className="font-sans w-full h-screen bg-slate-900 overflow-hidden relative">
-                        <div className="absolute inset-0 w-full h-full bg-cover bg-center transition-all duration-1000 ease-in-out" style={{ backgroundImage: `url(${currentScreen?.background || ''})` }}>
-                            <div className="absolute inset-0 w-full h-full bg-black/40"></div>
+                    <div className="relative w-full h-full flex flex-col justify-center items-center p-4 md:p-8">
+                        <div className={`w-full max-w-7xl h-[80vh] bg-white/10 backdrop-blur-md rounded-2xl shadow-lg border border-white/20 transition-all duration-500 ease-in-out`}>
+                            {currentScreen ? <ScreenRenderer screen={currentScreen} isEditing={isEditing} settings={settings} /> : <div className="w-full h-full flex justify-center items-center"><h1 className="text-2xl text-white">Crea tu primera pantalla.</h1></div>}
                         </div>
 
-                        <div className="relative w-full h-full flex flex-col justify-center items-center p-4 md:p-8">
-                            <div className={`w-full max-w-7xl h-[80vh] bg-white/10 backdrop-blur-md rounded-2xl shadow-lg border border-white/20 transition-all duration-500 ease-in-out`}>
-                                {currentScreen ? <ScreenRenderer screen={currentScreen} isEditing={isEditing} settings={settings} /> : <div className="w-full h-full flex justify-center items-center"><h1 className="text-2xl text-white">Crea tu primera pantalla.</h1></div>}
+                        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-6 z-20">
+                            <button onClick={goToPrevious} className="p-3 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30"><ChevronLeft size={24} /></button>
+                            <div className="flex gap-2.5">
+                                {screens.map((_, index) => (<div key={index} onClick={() => setCurrentIndex(index)} className={`w-2.5 h-2.5 rounded-full cursor-pointer transition-all ${currentIndex === index ? 'bg-white scale-125' : 'bg-white/50'}`} />))}
                             </div>
-
-                            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-6 z-20">
-                                <button onClick={goToPrevious} className="p-3 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30"><ChevronLeft size={24} /></button>
-                                <div className="flex gap-2.5">
-                                    {screens.map((_, index) => (<div key={index} onClick={() => setCurrentIndex(index)} className={`w-2.5 h-2.5 rounded-full cursor-pointer transition-all ${currentIndex === index ? 'bg-white scale-125' : 'bg-white/50'}`} />))}
-                                </div>
-                                <button onClick={goToNext} className="p-3 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30"><ChevronRight size={24} /></button>
-                            </div>
+                            <button onClick={goToNext} className="p-3 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30"><ChevronRight size={24} /></button>
                         </div>
+                    </div>
 
-                        <div className="absolute top-6 left-6 z-30">
-                            <button onClick={() => setSettingsOpen(true)} className="p-3 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30"><Settings size={22} /></button>
-                        </div>
-                        <div className="absolute top-6 right-6 z-30">
-                            <button onClick={() => setIsEditing(true)} className="p-3 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30"><Edit size={22} /></button>
-                        </div>
-                        
-                        {(isEditing || isSettingsOpen) && <div className="absolute inset-0 bg-black/30 z-30" onClick={() => { setIsEditing(false); setSettingsOpen(false); }}></div>}
-                        
-                        {isEditing && <EditorPanel screen={currentScreen} onUpdate={handleUpdateScreen} onClose={() => setIsEditing(false)} onAddScreen={handleAddScreen} onDeleteScreen={handleDeleteScreen} />}
-                        {isSettingsOpen && <SettingsPanel settings={settings} onUpdate={setSettings} onClose={() => setSettingsOpen(false)} onExport={handleExport} />}
-                    </main>
-                );
-            }
+                    <div className="absolute top-6 left-6 z-30">
+                        <button onClick={() => setSettingsOpen(true)} className="p-3 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30"><Settings size={22} /></button>
+                    </div>
+                    <div className="absolute top-6 right-6 z-30">
+                        <button onClick={() => setIsEditing(true)} className="p-3 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30"><Edit size={22} /></button>
+                    </div>
+                    
+                    {(isEditing || isSettingsOpen) && <div className="absolute inset-0 bg-black/30 z-30" onClick={() => { setIsEditing(false); setSettingsOpen(false); }}></div>}
+                    
+                    {isEditing && <EditorPanel screen={currentScreen} onUpdate={handleUpdateScreen} onClose={() => setIsEditing(false)} onAddScreen={handleAddScreen} onDeleteScreen={handleDeleteScreen} />}
+                    {isSettingsOpen && <SettingsPanel settings={settings} onUpdate={setSettings} onClose={() => setSettingsOpen(false)} onExport={handleExport} />}
+                </main>
+            );
+        }
 
-            // Le decimos a React que renderice nuestro componente 'App' en el div 'root'
-            ReactDOM.render(<App />, document.getElementById('root'));
-        });
+        // Le decimos a React que renderice nuestro componente 'App' en el div 'root'
+        ReactDOM.render(<App />, document.getElementById('root'));
     </script>
 </body>
 </html>
