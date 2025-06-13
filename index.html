@@ -27,23 +27,23 @@
     </style>
 </head>
 <body class="bg-slate-900 overflow-hidden">
-    <!-- 2. El div donde se cargará toda tu aplicación de React -->
+    <!-- El div donde se cargará toda tu aplicación de React -->
     <div id="root"></div>
 
-    <!-- 3. Tu código de React. Nota el type="text/babel" -->
+    <!-- Tu código de React -->
     <script type="text/babel">
-        // Se envuelve todo el código en un event listener para asegurar que las librerías externas se carguen primero.
-        document.addEventListener('DOMContentLoaded', () => {
+        // **LA CORRECCIÓN CLAVE:** Usamos window.addEventListener('load', ...)
+        // Esto asegura que TODOS los scripts (React, Lucide, etc.) se hayan cargado
+        // antes de intentar ejecutar el código de la aplicación.
+        window.addEventListener('load', () => {
             // --- Registro del Service Worker ---
             if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('./sw.js')
-                        .then(reg => console.log('Service Worker Registrado'))
-                        .catch(err => console.log('Error en registro de Service Worker: ', err));
-                });
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker Registrado'))
+                    .catch(err => console.log('Error en registro de Service Worker: ', err));
             }
         
-            // Iconos de Lucide-React
+            // Ahora es seguro acceder a la librería 'lucide'
             const { ChevronLeft, ChevronRight, Edit, X, Image: ImageIcon, Type, Film, Settings, Download, Trash2 } = lucide;
 
             // --- Helper para generar el HTML exportable ---
@@ -198,7 +198,7 @@
                     const htmlContent = generateViewerHTML(screens, currentIndex);
                     const blob = new Blob([htmlContent], { type: 'text/html' });
                     const a = document.createElement('a');
-a.href = URL.createObjectURL(blob);
+                    a.href = URL.createObjectURL(blob);
                     a.download = 'presentacion.html';
                     a.click();
                     URL.revokeObjectURL(a.href);
@@ -239,10 +239,9 @@ a.href = URL.createObjectURL(blob);
                 );
             }
 
-            // 4. Le decimos a React que renderice nuestro componente 'App' en el div 'root'
+            // Le decimos a React que renderice nuestro componente 'App' en el div 'root'
             ReactDOM.render(<App />, document.getElementById('root'));
         });
     </script>
 </body>
 </html>
-
