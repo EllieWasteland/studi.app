@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editor de Presentaciones</title>
 
-    <!-- Los scripts se han movido al final del body -->
-
     <!-- Enlace al Manifest para la PWA -->
     <link rel="manifest" href="manifest.json">
     
@@ -24,16 +22,15 @@
     <!-- El div donde se cargará toda tu aplicación de React -->
     <div id="root"></div>
 
-    <!-- Scripts de dependencias (movidos al final del body para una carga correcta) -->
+    <!-- Scripts de dependencias (cargados en orden al final del body) -->
     <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
-    <script src="https://unpkg.com/lucide-react@0.292.0/dist/lucide-react.js"></script>
+    <!-- URL CORREGIDA Y ACTUALIZADA para la librería de iconos -->
+    <script src="https://cdn.jsdelivr.net/npm/lucide-react@0.395.0/dist/lucide-react.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <!-- Tu código de React -->
     <script type="text/babel">
-        // Ya no es necesario el window.addEventListener('load') porque los scripts se cargan en orden.
-        
         // --- Registro del Service Worker ---
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js')
