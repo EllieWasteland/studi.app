@@ -1,0 +1,24 @@
+{
+  "name": "Presentación Educativa Interactiva",
+  "short_name": "Presentación",
+  "description": "Una aplicación de presentaciones para aprender y enseñar.",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#1e293b",
+  "theme_color": "#334155",
+  "orientation": "landscape",
+  "icons": [
+    {
+      "src": "images/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "images/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
