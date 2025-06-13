@@ -1,13 +1,12 @@
 // Define un nombre y versión para la caché
 const CACHE_NAME = 'presentacion-educativa-v1';
-// Lista de archivos para guardar en caché
+// Lista de archivos para guardar en caché. Usamos rutas relativas.
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/manifest.json'
-  // Puedes añadir aquí las URLs de los íconos si quieres
-  // '/images/icon-192x192.png',
-  // '/images/icon-512x512.png'
+  './', // Representa el directorio raíz
+  './index.html',
+  './manifest.json',
+  './images/icon-192x192.png',
+  './images/icon-512x512.png'
 ];
 
 // Evento 'install': se dispara cuando el Service Worker se instala
@@ -17,25 +16,34 @@ self.addEventListener('install', event => {
     // Abre la caché con el nombre que definimos
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Caché abierta');
+        console.log('Caché abierta y archivos añadidos');
         // Agrega todos los archivos de nuestra lista a la caché
         return cache.addAll(urlsToCache);
       })
   );
 });
 
-// Evento 'fetch': se dispara cada vez que la página solicita un recurso (un archivo, una imagen, etc.)
+// Evento 'fetch': se dispara cada vez que la página solicita un recurso
 self.addEventListener('fetch', event => {
+  // Ignoramos las peticiones que no son GET
+  if (event.request.method !== 'GET') {
+    return;
+  }
+  
   event.respondWith(
-    // Busca el recurso en la caché primero
+    // Estrategia: Cache first, then network
     caches.match(event.request)
-      .then(response => {
+      .then(cachedResponse => {
         // Si el recurso está en la caché, lo devuelve desde ahí
-        if (response) {
-          return response;
+        if (cachedResponse) {
+          return cachedResponse;
         }
+
         // Si no está en la caché, lo pide a la red
-        return fetch(event.request);
+        return fetch(event.request).then(networkResponse => {
+           // Opcional: podrías clonar y guardar la nueva respuesta en caché aquí si quisieras
+           return networkResponse;
+        });
       }
     )
   );
